@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thu tiền điện</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input, button, textarea { margin: 5px; padding: 5px; }
+        #hoaDon { width: 320px; height: 200px; border: 1px solid #ccc; padding: 10px; white-space: pre-wrap; }
+        .row { display: flex; align-items: center; margin-bottom: 10px; }
+        .label { width: 150px; }
+        #lichSuIn, #lichSuThu { width: 300px; height: 100px; margin: 5px; }
+    </style>
+</head>
+<body>
+
+<h2>Thu tiền điện</h2>
+
+<div class="row">
+    <label class="label">Mã khách hàng</label>
+    <input list="danhSachKH" id="maKH" placeholder="(mục tìm kiếm)">
+    <datalist id="danhSachKH"></datalist>
+    <button onclick="timKiemMaKH()">🔍</button>
+</div>
+
+<div class="row">
+    <label class="label">Tìm theo tên KH</label>
+    <input id="tenKHInput" placeholder="Nhập tên KH">
+    <button onclick="timKiemTenKH()">🔍</button>
+</div>
+
+<div class="row">
+    <label class="label">Số tiền</label>
+    <input id="soTien" readonly>
+</div>
+
+<div class="row">
+    <label class="label">Tên KH</label>
+    <input id="tenKH" readonly>
+</div>
+
+<div>
+    <div id="hoaDon">[Hóa đơn sẽ hiển thị tại đây]</div>
+    <button onclick="inHoaDon()">In</button>
+    <button onclick="xacNhanThu()" style="border:2px solid black;">xác nhận đã thu</button>
+</div>
+
+<div class="row">
+    <button onclick="document.getElementById('fileInput').click()">Đẩy dữ liệu</button>
+    <input type="file" id="fileInput" accept=".xlsx" style="display:none" onchange="docFileExcel(event)">
+</div>
+
+<div class="row">
+    <div>
+        <label>Lịch sử in</label><br>
+        <textarea id="lichSuIn" readonly></textarea><br>
+        <button onclick="xuatLichSu('in')">Xuất lịch sử</button>
+    </div>
+    <div>
+        <label><b>lịch sử thu</b></label><br>
+        <textarea id="lichSuThu" readonly></textarea><br>
+        <button onclick="xuatLichSu('thu')">Xuất lịch sử</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
