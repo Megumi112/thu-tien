@@ -102,3 +102,32 @@ function xuatLichSu(loai) {
     a.download = loai === 'in' ? "lich_su_in.txt" : "lich_su_thu.txt";
     a.click();
 }
+function xuatLichSuExcel() {
+    const wb = XLSX.utils.book_new();
+
+    const wsIn = XLSX.utils.json_to_sheet(
+        lichSuIn.map(item => chuyenChuoiThanhObject(item))
+    );
+    XLSX.utils.book_append_sheet(wb, wsIn, "Lịch sử in");
+
+    const wsThu = XLSX.utils.json_to_sheet(
+        lichSuThu.map(item => chuyenChuoiThanhObject(item))
+    );
+    XLSX.utils.book_append_sheet(wb, wsThu, "Lịch sử thu");
+
+    XLSX.writeFile(wb, "lich_su_in_thu.xlsx");
+}
+
+function chuyenChuoiThanhObject(hoaDon) {
+    const obj = {};
+    const lines = hoaDon.split('\\n');
+    lines.forEach(line => {
+        if (line.includes("Mã KH:")) obj["Mã KH"] = line.split("Mã KH:")[1].trim();
+        if (line.includes("Tên KH:")) obj["Tên KH"] = line.split("Tên KH:")[1].trim();
+        if (line.includes("Số Tiền:")) obj["Số tiền"] = line.split("Số Tiền:")[1].replace("₫", "").trim();
+        if (line.includes("Phí:")) obj["Phí"] = line.split("Phí:")[1].replace("₫", "").trim();
+        if (line.includes("Tổng Tiền:")) obj["Tổng"] = line.split("Tổng Tiền:")[1].replace("₫", "").trim();
+        if (line.includes("Ngày")) obj["Ngày"] = line.trim().replace("Ngày ", "");
+    });
+    return obj;
+}
