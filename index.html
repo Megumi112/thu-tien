@@ -141,6 +141,11 @@ function inHoaDon(){
   localStorage.setItem('lichSuIn',JSON.stringify(lichSuIn));capNhatLichSu();
   const el=document.getElementById('hoaDon');const ori=el.innerText;el.innerText=removeVietnameseTones(ori);setTimeout(()=>{window.print();el.innerText=ori;},0);
 }
+  @media print {
+  body * { visibility: hidden; }
+  #hoaDon, #hoaDon * { visibility: visible; }
+  #hoaDon { position: absolute; top: 0; left: 0; width: 100%; }
+}
 function xacNhanThu(){
   const ma=document.getElementById('maKH').value,ten=document.getElementById('tenKH').value,so=Number(document.getElementById('soTien').value||0)+phiCoDinh;
   lichSuThu.push({maKH:ma,tenKH:ten,soTien:so,thoiGian:new Date().toLocaleString()});
