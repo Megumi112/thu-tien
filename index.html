@@ -107,15 +107,30 @@ function hienThiHoaDon(ma,ten,so){
   const txt=`BIEN LAI NHAN TIEN CHUYEN KHOAN\n\nMa KH: ${ma}\nTen KH: ${ten}\nSo tien: ${formatVND(so)}\nPhi: ${formatVND(phiCoDinh)}\nTong tien: ${formatVND(tong)}\nNguoi thu tien: ${nguoi}\n\nDA NHAN TIEN\n${t}`;
   document.getElementById('hoaDon').innerText=txt;
 
-  // Hiển thị mã QR
-  const qr=document.getElementById('maQR');
-  qr.innerHTML = "";
-  new QRCode(qr, {
-    text: ma,
-    width: 100,
-    height: 100
-  });
-}
+  const hoaDonEl = document.getElementById('hoaDon');
+hoaDonEl.innerHTML = `
+  <pre style="white-space:pre-wrap; font-family:'Times New Roman',serif;">
+BIEN LAI NHAN TIEN CHUYEN KHOAN
+
+Ma KH: ${ma}
+Ten KH: ${ten}
+So tien: ${formatVND(so)}
+Phi: ${formatVND(phiCoDinh)}
+Tong tien: ${formatVND(tong)}
+Nguoi thu tien: ${nguoi}
+
+DA NHAN TIEN
+${t}
+</pre>
+<div id="maQR" style="text-align:center; margin-top:8px;"></div>
+`;
+
+new QRCode(document.getElementById("maQR"), {
+  text: ma,
+  width: 100,
+  height: 100
+});
+
 function capNhatLichSu(){
   document.getElementById('lichSuIn').value=lichSuIn.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${formatVND(i.soTien)}`).join('\n');
   document.getElementById('lichSuThu').value=lichSuThu.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${formatVND(i.soTien)}`).join('\n');
