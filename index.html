@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -24,7 +25,6 @@
     #lichSuIn,#lichSuThu{width:100%;min-height:72px;resize:vertical}
     .history-btns{display:flex;gap:7px;justify-content:flex-end}
     #qr-reader{width:98vw!important;max-width:360px;margin:12px auto;display:none;border-radius:18px;box-shadow:0 4px 24px #ccc;background:#fafafa;overflow:hidden}
-    #maQR{text-align:center;margin-top:12px}
     @media print{body *{visibility:hidden}#hoaDon,#hoaDon *{visibility:visible}#hoaDon{position:absolute;top:0;left:0;width:100%}}
   </style>
 </head>
@@ -56,7 +56,6 @@
   <input id="tenKH" readonly>
 </div>
 <div id="hoaDon">[Hóa đơn sẽ hiển thị tại đây]</div>
-<div id="maQR"></div>
 <div class="action-btns">
   <button onclick="inHoaDon()">In</button>
   <button style="border:2px solid #000" onclick="xacNhanThu()">Xác nhận đã thu</button>
@@ -79,7 +78,6 @@
 let duLieu=[],lichSuIn=JSON.parse(localStorage.getItem('lichSuIn')||'[]'),lichSuThu=JSON.parse(localStorage.getItem('lichSuThu')||'[]');
 const phiCoDinh=2000;
 function formatVND(n){return Number(n).toLocaleString('vi-VN')+' ₫';}
-function removeVietnameseTones(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D');}
 function docFileExcel(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
@@ -104,11 +102,8 @@ function hienThiHoaDon(ma,ten,so){
   const nguoi=document.getElementById('nguoiThuTien').value||'-';
   const tong=Number(so)+phiCoDinh;
   const now=new Date();const t=`Ngày ${now.toLocaleDateString('vi-VN')}, Giờ ${now.toTimeString().slice(0,8)}`;
-  const txt=`BIEN LAI NHAN TIEN CHUYEN KHOAN\n\nMa KH: ${ma}\nTen KH: ${ten}\nSo tien: ${formatVND(so)}\nPhi: ${formatVND(phiCoDinh)}\nTong tien: ${formatVND(tong)}\nNguoi thu tien: ${nguoi}\n\nDA NHAN TIEN\n${t}`;
-  document.getElementById('hoaDon').innerText=txt;
-
   const hoaDonEl = document.getElementById('hoaDon');
-hoaDonEl.innerHTML = `
+  hoaDonEl.innerHTML = `
   <pre style="white-space:pre-wrap; font-family:'Times New Roman',serif;">
 BIEN LAI NHAN TIEN CHUYEN KHOAN
 
@@ -122,15 +117,13 @@ Nguoi thu tien: ${nguoi}
 DA NHAN TIEN
 ${t}
 </pre>
-<div id="maQR" style="text-align:center; margin-top:8px;"></div>
-`;
-
-new QRCode(document.getElementById("maQR"), {
-  text: ma,
-  width: 100,
-  height: 100
-});
-
+<div id="maQR" style="text-align:center;"></div>`;
+  new QRCode(document.getElementById("maQR"), {
+    text: ma,
+    width: 100,
+    height: 100
+  });
+}
 function capNhatLichSu(){
   document.getElementById('lichSuIn').value=lichSuIn.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${formatVND(i.soTien)}`).join('\n');
   document.getElementById('lichSuThu').value=lichSuThu.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${formatVND(i.soTien)}`).join('\n');
@@ -139,12 +132,7 @@ function inHoaDon(){
   const ma=document.getElementById('maKH').value,ten=document.getElementById('tenKH').value,so=Number(document.getElementById('soTien').value||0)+phiCoDinh;
   lichSuIn.push({maKH:ma,tenKH:ten,soTien:so,thoiGian:new Date().toLocaleString()});
   localStorage.setItem('lichSuIn',JSON.stringify(lichSuIn));capNhatLichSu();
-  const el=document.getElementById('hoaDon');const ori=el.innerText;el.innerText=removeVietnameseTones(ori);setTimeout(()=>{window.print();el.innerText=ori;},0);
-}
-  @media print {
-  body * { visibility: hidden; }
-  #hoaDon, #hoaDon * { visibility: visible; }
-  #hoaDon { position: absolute; top: 0; left: 0; width: 100%; }
+  window.print();
 }
 function xacNhanThu(){
   const ma=document.getElementById('maKH').value,ten=document.getElementById('tenKH').value,so=Number(document.getElementById('soTien').value||0)+phiCoDinh;
