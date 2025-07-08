@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -25,7 +24,6 @@
     #lichSuIn,#lichSuThu{width:100%;min-height:72px;resize:vertical}
     .history-btns{display:flex;gap:7px;justify-content:flex-end}
     #qr-reader{width:98vw!important;max-width:360px;margin:12px auto;display:none;border-radius:18px;box-shadow:0 4px 24px #ccc;background:#fafafa;overflow:hidden}
-    @media print{body *{visibility:hidden}#hoaDon,#hoaDon *{visibility:visible}#hoaDon{position:absolute;top:0;left:0;width:100%}}
   </style>
 </head>
 <body>
@@ -129,13 +127,26 @@ function capNhatLichSu(){
   document.getElementById('lichSuThu').value=lichSuThu.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${formatVND(i.soTien)}`).join('\n');
 }
 function inHoaDon(){
-  const ma=document.getElementById('maKH').value,ten=document.getElementById('tenKH').value,so=Number(document.getElementById('soTien').value||0)+phiCoDinh;
+  const ma=document.getElementById('maKH').value;
+  const ten=document.getElementById('tenKH').value;
+  const so=Number(document.getElementById('soTien').value||0)+phiCoDinh;
   lichSuIn.push({maKH:ma,tenKH:ten,soTien:so,thoiGian:new Date().toLocaleString()});
   localStorage.setItem('lichSuIn',JSON.stringify(lichSuIn));capNhatLichSu();
-  window.print();
+
+  const hoaDonHTML = document.getElementById('hoaDon').outerHTML;
+  const w = window.open('', '_blank');
+  w.document.write(`
+    <html><head><title>Hóa đơn</title></head>
+    <body onload="window.print()" style="font-family:'Times New Roman',serif;">
+    ${hoaDonHTML}
+    </body></html>
+  `);
+  w.document.close();
 }
 function xacNhanThu(){
-  const ma=document.getElementById('maKH').value,ten=document.getElementById('tenKH').value,so=Number(document.getElementById('soTien').value||0)+phiCoDinh;
+  const ma=document.getElementById('maKH').value;
+  const ten=document.getElementById('tenKH').value;
+  const so=Number(document.getElementById('soTien').value||0)+phiCoDinh;
   lichSuThu.push({maKH:ma,tenKH:ten,soTien:so,thoiGian:new Date().toLocaleString()});
   localStorage.setItem('lichSuThu',JSON.stringify(lichSuThu));capNhatLichSu();
 }
