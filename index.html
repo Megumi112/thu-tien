@@ -139,7 +139,7 @@ function docFileExcel(e){
 function timKiemMaKH(){
   const ma=document.getElementById('maKH').value.trim();
   const kh=duLieu.find(r=>r.MA_KHTT===ma);
-  if(!kh){document.getElementById('hoaDonText').innerText='[Khong tim thay khach hang]';return;}
+  if(!kh){document.getElementById('hoaDonText').textContent='[Khong tim thay khach hang]';return;}
   document.getElementById('tenKH').value=kh.TEN_KHTT;
   document.getElementById('soTien').value=kh.TONG_NOP;
   hienThiHoaDon(ma, kh.TEN_KHTT, kh.TONG_NOP);
@@ -165,7 +165,7 @@ Nguoi thu tien: ${nguoi}
 DA NHAN TIEN
 ${t}`;
 
-  document.getElementById('hoaDonText').innerText = removeVietnameseTones(txt);
+  document.getElementById('hoaDonText').textContent = removeVietnameseTones(txt);
 
   const qrArea = document.getElementById('qrCodeArea');
   qrArea.innerHTML = '';
@@ -190,7 +190,7 @@ function inHoaDon(){
   localStorage.setItem('lichSuIn',JSON.stringify(lichSuIn));capNhatLichSu();
   const hoaDonText = document.getElementById('hoaDonText');
   const oriText = hoaDonText.innerText;
-  hoaDonText.innerText = removeVietnameseTones(oriText);
+  hoaDonText.textContent = removeVietnameseTones(oriText);
   setTimeout(() => {
     window.print();
     hoaDonText.innerText = oriText;
