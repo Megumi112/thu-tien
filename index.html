@@ -78,8 +78,45 @@
 <script>
 let duLieu=[],lichSuIn=JSON.parse(localStorage.getItem('lichSuIn')||'[]'),lichSuThu=JSON.parse(localStorage.getItem('lichSuThu')||'[]');
 const phiCoDinh=2000;
+const bacThangGia = [
+  { sanLuong: 55, donGia: 1984 },
+  { sanLuong: 52, donGia: 2050 },
+  { sanLuong: 103, donGia: 2380 },
+  { sanLuong: 103, donGia: 2998 },
+  { sanLuong: 103, donGia: 3350 },
+  { sanLuong: 103, donGia: 3460 }
+];
+
+function tinhTienDien(sanLuong) {
+  let tongTien = 0;
+  let slConLai = sanLuong;
+  for (const bac of bacThangGia) {
+    const soKWh = Math.min(slConLai, bac.sanLuong);
+    tongTien += soKWh * bac.donGia;
+    slConLai -= soKWh;
+    if (slConLai <= 0) break;
+  }
+  return tongTien;
+}
+
+function uocTinhSanLuong(tongTien) {
+  let sanLuong = 0;
+  for (const bac of bacThangGia) {
+    const tienBac = bac.sanLuong * bac.donGia;
+    if (tongTien >= tienBac) {
+      sanLuong += bac.sanLuong;
+      tongTien -= tienBac;
+    } else {
+      sanLuong += Math.floor(tongTien / bac.donGia);
+      break;
+    }
+  }
+  return sanLuong;
+}
+
 function formatVND(n){return Number(n).toLocaleString('vi-VN')+' ₫';}
 function removeVietnameseTones(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D');}
+
 function docFileExcel(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
@@ -87,38 +124,64 @@ function docFileExcel(e){
     const data=new Uint8Array(evt.target.result);
     const wb=XLSX.read(data,{type:'array'});
     duLieu=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+    duLieu = duLieu.map(row => {
+      if (row.SAN_LUONG) {
+        row.TONG_NOP = tinhTienDien(Number(row.SAN_LUONG));
+      }
+      return row;
+    });
     const list=document.getElementById('danhSachKH');list.innerHTML='';
     duLieu.forEach(row=>{const o=document.createElement('option');o.value=row.MA_KHTT;list.appendChild(o);});
   };
   r.readAsArrayBuffer(f);
 }
+
 function timKiemMaKH(){
   const ma=document.getElementById('maKH').value.trim();
   const kh=duLieu.find(r=>r.MA_KHTT===ma);
-  if(!kh){document.getElementById('hoaDonText').innerText='[Không tìm thấy khách hàng]';return;}
+  if(!kh){document.getElementById('hoaDonText').innerText='[Khong tim thay khach hang]';return;}
   document.getElementById('tenKH').value=kh.TEN_KHTT;
   document.getElementById('soTien').value=kh.TONG_NOP;
-  hienThiHoaDon(kh.MA_KHTT,kh.TEN_KHTT,kh.TONG_NOP);
+  hienThiHoaDon(ma, kh.TEN_KHTT, kh.TONG_NOP);
 }
-function hienThiHoaDon(ma,ten,so){
-  const nguoi=document.getElementById('nguoiThuTien').value||'-';
-  const tong=Number(so)+phiCoDinh;
-  const now=new Date();const t=`Ngày ${now.toLocaleDateString('vi-VN')}, Giờ ${now.toTimeString().slice(0,8)}`;
-  const txt=`BIEN LAI NHAN TIEN CHUYEN KHOAN\n\nMa KH: ${ma}\nTen KH: ${ten}\nSo tien: ${formatVND(so)}\nPhi: ${formatVND(phiCoDinh)}\nTong tien: ${formatVND(tong)}\nNguoi thu tien: ${nguoi}\n\nDA NHAN TIEN\n${t}`;
-  document.getElementById('hoaDonText').innerText = txt;
+
+function hienThiHoaDon(ma, ten, so){
+  const nguoi = document.getElementById('nguoiThuTien').value || '-';
+  const tong = Number(so) + phiCoDinh;
+  const now = new Date();
+  const t = `Ngay ${now.toLocaleDateString('vi-VN')}, Gio ${now.toTimeString().slice(0,8)}`;
+  const sanLuongUocTinh = uocTinhSanLuong(Number(so));
+
+  const txt = `BIEN LAI NHAN TIEN CHUYEN KHOAN
+
+Ma KH: ${ma}
+Ten KH: ${ten}
+San luong uoc tinh: ${sanLuongUocTinh} kWh
+So tien: ${formatVND(so)}
+Phi: ${formatVND(phiCoDinh)}
+Tong tien: ${formatVND(tong)}
+Nguoi thu tien: ${nguoi}
+
+DA NHAN TIEN
+${t}`;
+
+  document.getElementById('hoaDonText').innerText = removeVietnameseTones(txt);
+
   const qrArea = document.getElementById('qrCodeArea');
   qrArea.innerHTML = '';
   new QRCode(qrArea, {
     text: ma,
-    width: 80,
-    height: 80,
+    width: 128,
+    height: 128,
     correctLevel: QRCode.CorrectLevel.H
   });
 }
+
 function capNhatLichSu(){
-  document.getElementById('lichSuIn').value=lichSuIn.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${formatVND(i.soTien)}`).join('\\n');
-  document.getElementById('lichSuThu').value=lichSuThu.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${formatVND(i.soTien)}`).join('\\n');
+  document.getElementById('lichSuIn').value=lichSuIn.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${formatVND(i.soTien)}`).join('\n');
+  document.getElementById('lichSuThu').value=lichSuThu.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${formatVND(i.soTien)}`).join('\n');
 }
+
 function inHoaDon(){
   const ma=document.getElementById('maKH').value,
         ten=document.getElementById('tenKH').value,
@@ -126,7 +189,6 @@ function inHoaDon(){
   lichSuIn.push({maKH:ma,tenKH:ten,soTien:so,thoiGian:new Date().toLocaleString()});
   localStorage.setItem('lichSuIn',JSON.stringify(lichSuIn));capNhatLichSu();
   const hoaDonText = document.getElementById('hoaDonText');
-  const qrArea = document.getElementById('qrCodeArea');
   const oriText = hoaDonText.innerText;
   hoaDonText.innerText = removeVietnameseTones(oriText);
   setTimeout(() => {
@@ -134,23 +196,28 @@ function inHoaDon(){
     hoaDonText.innerText = oriText;
   }, 0);
 }
+
 function xacNhanThu(){
   const ma=document.getElementById('maKH').value,ten=document.getElementById('tenKH').value,so=Number(document.getElementById('soTien').value||0)+phiCoDinh;
   lichSuThu.push({maKH:ma,tenKH:ten,soTien:so,thoiGian:new Date().toLocaleString()});
   localStorage.setItem('lichSuThu',JSON.stringify(lichSuThu));capNhatLichSu();
 }
+
 function xuatLichSu(loai){
   const arr=loai==='in'?lichSuIn:lichSuThu;
-  const txt=arr.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${i.soTien}`).join('\\n');
+  const txt=arr.map(i=>`(${i.thoiGian}) ${i.maKH}-${i.tenKH}: ${i.soTien}`).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));a.download=`lich_su_${loai}.txt`;a.click();
 }
+
 function xuatLichSuExcel(){
   const ws=XLSX.utils.json_to_sheet([...lichSuIn.map(x=>({...x,Loai:'In'})),...lichSuThu.map(x=>({...x,Loai:'Thu'}))]);
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'LichSu');XLSX.writeFile(wb,'lich_su.xlsx');
 }
+
 function xoaLichSu(){
-  if(confirm('Xóa toàn bộ lịch sử?')){lichSuIn=[];lichSuThu=[];localStorage.removeItem('lichSuIn');localStorage.removeItem('lichSuThu');capNhatLichSu();}
+  if(confirm('Xoa toan bo lich su?')){lichSuIn=[];lichSuThu=[];localStorage.removeItem('lichSuIn');localStorage.removeItem('lichSuThu');capNhatLichSu();}
 }
+
 let html5QrCode;
 function batDauQuetQR(){
   const region=document.getElementById('qr-reader');region.style.display='block';
@@ -158,7 +225,7 @@ function batDauQuetQR(){
   html5QrCode.start({facingMode:'environment'},{fps:10,qrbox:250},
     msg=>{document.getElementById('maKH').value=msg;region.style.display='none';html5QrCode.stop();timKiemMaKH();},
     err=>{}
-  ).catch(()=>{alert('Không mở được camera');region.style.display='none';});
+  ).catch(()=>{alert('Khong mo duoc camera');region.style.display='none';});
 }
 window.onload=capNhatLichSu;
 </script>
